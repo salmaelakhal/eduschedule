@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Day {
+  LUNDI
+  MARDI
+  MERCREDI
+  JEUDI
+  VENDREDI
+  SAMEDI
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject   Subject? @relation(fields: [subjectId], references: [id])
+  subjectId Int?
+
+  enrollments Enrollment[]
+  schedules   Schedule[]
+}
+
+model Class {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  enrollments Enrollment[]
+  schedules   Schedule[]
+}
+
+model Room {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  capacity  Int
+  createdAt DateTime @default(now())
+
+  schedules Schedule[]
+}
+
+model Subject {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  teachers  User[]
+  schedules Schedule[]
+}
+
+model TimeSlot {
+  id        Int    @id @default(autoincrement())
+  day       Day
+  startTime String
+  endTime   String
+
+  schedules Schedule[]
+
+  @@unique([day, startTime])
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  enrolledAt DateTime @default(now())
+
+  student   User  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId Int
+
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classId Int
+
+  @@unique([studentId, classId])
+}
+
+model Schedule {
+  id        Int      @id @default(autoincrement())
+  isOnline  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classId Int
+
+  teacher   User @relation(fields: [teacherId], references: [id])
+  teacherId Int
+
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId Int
+
+  room   Room? @relation(fields: [roomId], references: [id])
+  roomId Int?
+
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id])
+  timeSlotId Int
+
+  @@unique([teacherId, timeSlotId])
+  @@unique([roomId, timeSlotId])
+  @@unique([classId, timeSlotId])
+}
