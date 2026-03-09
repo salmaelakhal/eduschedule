@@ -3,18 +3,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// ── Vérifier le token JWT ──
+// ── Vérifier le token JWT depuis le cookie ──
 export const authenticate = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies.token; // ← depuis HttpOnly cookie
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!token) {
     return res.status(401).json({
       success: false,
       message: 'Accès refusé. Token manquant.',
     });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
