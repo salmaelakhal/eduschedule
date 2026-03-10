@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.sg-cell:hover .sg-delete-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}

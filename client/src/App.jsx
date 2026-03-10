@@ -7,6 +7,7 @@ import AdminClasses from "./pages/admin/classes";
 import AdminClassDetail from "./pages/admin/classes/detail";
 import AdminRooms from './pages/admin/rooms';
 import AdminSubjects from './pages/admin/subjects';
+import AdminSchedule from './pages/admin/schedule';
 
 
 
@@ -29,9 +30,8 @@ export default function App() {
         <Route path="classes/:id" element={<AdminClassDetail />} />
         <Route path="rooms" element={<AdminRooms />} />
         <Route path="subjects" element={<AdminSubjects />} />
+        <Route path="schedule" element={<AdminSchedule />} />
 
-
-        <Route path="schedule" element={<Placeholder name="Affectation" />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
