@@ -5,6 +5,8 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/users";
 import AdminClasses from "./pages/admin/classes";
 import AdminClassDetail from "./pages/admin/classes/detail";
+import AdminRooms from './pages/admin/rooms';
+
 
 const Placeholder = ({ name }) => (
   <div style={{ padding: 28, color: "var(--color-text2)", fontSize: 13 }}>
@@ -23,7 +25,8 @@ export default function App() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="classes" element={<AdminClasses />} />
         <Route path="classes/:id" element={<AdminClassDetail />} />
-        <Route path="rooms" element={<Placeholder name="Salles" />} />
+        <Route path="rooms" element={<AdminRooms />} />
+        
         <Route path="subjects" element={<Placeholder name="Matières" />} />
         <Route path="schedule" element={<Placeholder name="Affectation" />} />
       </Route>
