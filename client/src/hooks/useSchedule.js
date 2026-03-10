@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import api from "../api";
 
+
+
 // Créneaux horaires
 export function useTimeSlots() {
   return useQuery({
@@ -42,7 +44,7 @@ export function useCreateSchedule() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body) => api.post("/schedules", body),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["schedules"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
 

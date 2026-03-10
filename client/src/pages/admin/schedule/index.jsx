@@ -11,6 +11,8 @@ import {
   useCreateSchedule,
   useDeleteSchedule,
 } from '../../../hooks/useSchedule';
+import { useExportPDF } from '../../../hooks/useExportPDF';
+import { useRef } from 'react';
 
 export default function Schedule() {
   const [selectedClassId, setSelectedClassId] = useState(null);
@@ -32,6 +34,9 @@ export default function Schedule() {
   // Classe active
   const activeClassId = selectedClassId ?? classes[0]?.id;
   const activeClass   = classes.find((c) => c.id === activeClassId);
+
+  const gridRef = useRef(null); 
+const { exportPDF } = useExportPDF();
 
 
 useEffect(() => {
@@ -91,12 +96,19 @@ console.log('schedules:', schedules);
           ))}
         </div>
 
-        <button
-          className="btn-ghost"
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <FileDown size={14} /> Exporter PDF
-        </button>
+<button
+  className="btn-ghost"
+  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+  onClick={() => exportPDF({
+    schedules,
+    timeSlots,
+    title:    `Emploi du temps — ${activeClass?.name}`,
+    subtitle: `Semaine en cours`,
+    filename: `emploi-du-temps-${activeClass?.name}.pdf`,
+  })}
+>
+  <FileDown size={14} /> Exporter PDF
+</button>
       </div>
 
       {/* ── Titre grille ── */}
@@ -112,6 +124,7 @@ console.log('schedules:', schedules);
 
       {/* ── Grille ── */}
       <ScheduleGrid
+      ref={gridRef}
         schedules={schedules}
         timeSlots={timeSlots}
         onCellClick={handleCellClick}

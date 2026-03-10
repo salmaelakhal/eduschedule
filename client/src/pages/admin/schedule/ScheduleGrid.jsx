@@ -1,5 +1,8 @@
 import { Trash2 } from 'lucide-react';
 import { Fragment } from 'react';
+import { forwardRef } from 'react';
+
+
 const DAYS_ORDER = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
 const DAYS_LABEL = { LUNDI: 'Lundi', MARDI: 'Mardi', MERCREDI: 'Mercredi', JEUDI: 'Jeudi', VENDREDI: 'Vendredi', SAMEDI: 'Samedi' };
 
@@ -14,8 +17,10 @@ function getEventColor(subjectId) {
   return EVENT_COLORS[(subjectId - 1) % EVENT_COLORS.length];
 }
 
-export default function ScheduleGrid({ schedules, timeSlots = [], onCellClick, onDeleteSeance }) {
-console.log('SEANCE[0]:', JSON.stringify(schedules[0]));
+const ScheduleGrid = forwardRef(function ScheduleGrid(
+  { schedules, timeSlots, onCellClick, onDeleteSeance }, ref
+) {
+  console.log('SEANCE[0]:', JSON.stringify(schedules[0]));
   // Extraire les heures uniques (9 slots) depuis les 54
   const uniqueHours = [];
   const seen = new Set();
@@ -37,7 +42,9 @@ console.log('SEANCE[0]:', JSON.stringify(schedules[0]));
 
 
   return (
-    <div className="schedule-grid-wrap">
+    <div 
+    ref={ref}
+    className="schedule-grid-wrap">
       <div
         className="schedule-grid"
         style={{ gridTemplateColumns: `90px repeat(${uniqueHours.length}, 1fr)` }}
@@ -128,4 +135,10 @@ const color = seance ? getEventColor(seance.subject?.id) : null;
       </div>
     </div>
   );
-}
+  });
+
+export default ScheduleGrid;
+
+
+
+
