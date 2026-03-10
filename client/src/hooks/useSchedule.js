@@ -1,13 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
-import api from '../api';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
+import api from "../api";
 
 // Créneaux horaires
 export function useTimeSlots() {
   return useQuery({
-    queryKey: ['timeslots'],
-    queryFn:  async () => {
-      const { data } = await api.get('/schedules/timeslots');
+    queryKey: ["timeslots"],
+    queryFn: async () => {
+      const { data } = await api.get("/schedules/timeslots");
       return data.data ?? []; // ← data.data directement, pas data.data.timeSlots
     },
     staleTime: Infinity,
@@ -17,10 +17,10 @@ export function useTimeSlots() {
 // Emploi du temps d'une classe (admin)
 export function useScheduleByClass(classId) {
   return useQuery({
-    queryKey: ['schedules', classId],  // ← manquait !
+    queryKey: ["schedules", classId], // ← manquait !
     queryFn: async () => {
       const { data } = await api.get(`/schedules?classId=${classId}`);
-      console.log('SCHEDULES RAW:', JSON.stringify(data));
+      console.log("SCHEDULES RAW:", JSON.stringify(data));
       return data.data.schedules ?? data.data ?? [];
     },
     enabled: !!classId,
@@ -29,10 +29,10 @@ export function useScheduleByClass(classId) {
 
 export function useMySchedule() {
   return useQuery({
-    queryKey: ['schedules', 'me'],
-    queryFn:  async () => {
-      const { data } = await api.get('/schedules/my');
-      console.log('MY SCHEDULE RESPONSE:', data); // ← log temporaire
+    queryKey: ["schedules", "me"],
+    queryFn: async () => {
+      const { data } = await api.get("/schedules/my");
+      console.log("MY SCHEDULE RESPONSE:", data); // ← log temporaire
       return data.data.schedules ?? data.data ?? [];
     },
   });
@@ -41,13 +41,15 @@ export function useMySchedule() {
 export function useCreateSchedule() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body) => api.post('/schedules', body),
-    onSuccess:  (_, variables) => {
-      qc.invalidateQueries({ queryKey: ['schedules'] });
-      toast.success('Séance ajoutée !');
+    mutationFn: (body) => api.post("/schedules", body),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ["schedules"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+
+      toast.success("Séance ajoutée !");
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Erreur lors de l\'ajout.');
+      toast.error(err.response?.data?.message || "Erreur lors de l'ajout.");
     },
   });
 }
@@ -56,12 +58,16 @@ export function useDeleteSchedule() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => api.delete(`/schedules/${id}`),
-    onSuccess:  () => {
-      qc.invalidateQueries({ queryKey: ['schedules'] });
-      toast.success('Séance supprimée !');
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["schedules"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+
+      toast.success("Séance supprimée !");
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Erreur lors de la suppression.');
+      toast.error(
+        err.response?.data?.message || "Erreur lors de la suppression.",
+      );
     },
   });
 }
