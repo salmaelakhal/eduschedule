@@ -1,20 +1,25 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useAuth } from '../../context/AuthContext';
+
 
 // user et onLogout → passés en props pour l'instant
 // on branchera AuthContext plus tard
-const MOCK_USER = {
-  fullName: 'Super Admin',
-  email:    'admin@eduschedule.com',
-  role:     'ADMIN',
-};
+
+// const MOCK_USER = {
+//   fullName: 'Super Admin',
+//   email:    'admin@eduschedule.com',
+//   role:     'ADMIN',
+// };
 
 export default function AdminLayout() {
-  const handleLogout = () => {
-    // on branchera AuthContext plus tard
-    console.log('logout');
-  };
+
+  const { user, logout } = useAuth();
+
+
+ const handleLogout = () => logout();
+
 
   return (
     <div style={{
@@ -24,7 +29,7 @@ export default function AdminLayout() {
     }}>
 
       {/* ── Sidebar ── */}
-      <Sidebar user={MOCK_USER} onLogout={handleLogout} />
+      <Sidebar user={user} onLogout={handleLogout} />
 
       {/* ── Main ── */}
       <div style={{
@@ -34,7 +39,7 @@ export default function AdminLayout() {
         overflow:  'hidden',
         minWidth:  0,
       }}>
-        <Header user={MOCK_USER} />
+        <Header user={user} />
 
         {/* ── Page content ── */}
         <main style={{

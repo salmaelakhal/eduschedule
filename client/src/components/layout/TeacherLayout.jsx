@@ -1,26 +1,26 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { GraduationCap, LogOut, CalendarDays } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
-const MOCK_USER = {
-  fullName: 'Sara Moussaoui',
-  email:    'sara.moussaoui@eduschedule.com',
-  role:     'TEACHER',
-  subject:  'Mathématiques',
-};
+// const MOCK_USER = {
+//   fullName: 'Sara Moussaoui',
+//   email:    'sara.moussaoui@eduschedule.com',
+//   role:     'TEACHER',
+//   subject:  'Mathématiques',
+// };
 
 export default function TeacherLayout() {
-  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const initials = MOCK_USER.fullName
+  const navigate = useNavigate();
+  const initials = user.fullName
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
 
-  const handleLogout = () => {
-    console.log('logout');
-  };
+ const handleLogout = () => logout();
 
   return (
     <div style={{
@@ -110,7 +110,7 @@ export default function TeacherLayout() {
             fontWeight:   600,
             color:        'var(--color-accent2)',
           }}>
-            📚 {MOCK_USER.subject}
+            📚 {user.subject?.name}
           </div>
 
           {/* Avatar */}
@@ -131,7 +131,7 @@ export default function TeacherLayout() {
             </div>
             <div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>
-                {MOCK_USER.fullName}
+                {user.fullName}
               </div>
               <div style={{ fontSize: 10, color: 'var(--color-text2)' }}>
                 Enseignant
