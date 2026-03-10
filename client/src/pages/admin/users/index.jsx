@@ -1,16 +1,10 @@
 import { useState } from 'react';
 import { Search, Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
-import Badge from '../../../components/ui/Badge';
-import UserFormModal   from './UserFormModal';
+import Badge    from '../../../components/ui/Badge';
+import Spinner  from '../../../components/ui/Spinner';
+import UserFormModal    from './UserFormModal';
 import UserDeleteDialog from './UserDeleteDialog';
-
-const MOCK_USERS = [
-  { id: 1, fullName: 'Super Admin',    email: 'admin@eduschedule.com',          role: 'ADMIN',   extra: '—' },
-  { id: 2, fullName: 'Sara Moussaoui', email: 'sara.moussaoui@eduschedule.com', role: 'TEACHER', extra: 'Mathématiques' },
-  { id: 3, fullName: 'Nadia El Fassi', email: 'nadia.elfassi@eduschedule.com',  role: 'TEACHER', extra: 'Algorithmique' },
-  { id: 4, fullName: 'Ahmed Tazi',     email: 'ahmed.tazi@eduschedule.com',     role: 'STUDENT', extra: 'L2 Informatique' },
-  { id: 5, fullName: 'Youssef Chami',  email: 'y.chami@eduschedule.com',        role: 'STUDENT', extra: 'L1 Informatique' },
-];
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '../../../hooks/useUsers';
 
 const ROLES = [
   { value: '',        label: 'Tous les rôles' },
@@ -20,53 +14,55 @@ const ROLES = [
 ];
 
 export default function Users() {
-  const [search,      setSearch]      = useState('');
-  const [roleFilter,  setRoleFilter]  = useState('');
-  const [formOpen,    setFormOpen]    = useState(false);
-  const [deleteOpen,  setDeleteOpen]  = useState(false);
-  const [editUser,    setEditUser]    = useState(null);
-  const [deleteId,    setDeleteId]    = useState(null);
-  const [isLoading,   setIsLoading]   = useState(false);
+  const [search,     setSearch]     = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [formOpen,   setFormOpen]   = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editUser,   setEditUser]   = useState(null);
+  const [deleteId,   setDeleteId]   = useState(null);
 
-  // ── Filtrage ──
-  const filtered = MOCK_USERS.filter((u) => {
+  const { data: users = [], isLoading } = useUsers();
+  const createUser = useCreateUser();
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
+
+  const filtered = users.filter((u) => {
     const matchSearch = u.fullName.toLowerCase().includes(search.toLowerCase())
       || u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = !roleFilter || u.role === roleFilter;
     return matchSearch && matchRole;
   });
 
-  const openAdd = () => {
-    setEditUser(null);
-    setFormOpen(true);
+  const openAdd  = () => { setEditUser(null); setFormOpen(true); };
+  const openEdit = (user) => { setEditUser(user); setFormOpen(true); };
+  const openDelete = (id) => { setDeleteId(id); setDeleteOpen(true); };
+
+  const handleSubmit = async (form) => {
+    // Filtrer password vide en mode edit
+    const body = { ...form };
+    if (editUser && !body.password) delete body.password;
+
+    if (editUser) {
+      await updateUser.mutateAsync({ id: editUser.id, ...body });
+    } else {
+      await createUser.mutateAsync(body);
+    }
+    setFormOpen(false);
   };
 
-  const openEdit = (user) => {
-    setEditUser(user);
-    setFormOpen(true);
+  const handleDelete = async () => {
+    await deleteUser.mutateAsync(deleteId);
+    setDeleteOpen(false);
   };
 
-  const openDelete = (id) => {
-    setDeleteId(id);
-    setDeleteOpen(true);
-  };
+  const isSubmitting = createUser.isPending || updateUser.isPending;
+  const isDeleting   = deleteUser.isPending;
 
-  const handleSubmit = (form) => {
-    setIsLoading(true);
-    // ← API plus tard
-    setTimeout(() => {
-      setIsLoading(false);
-      setFormOpen(false);
-    }, 1000);
-  };
-
-  const handleDelete = () => {
-    setIsLoading(true);
-    // ← API plus tard
-    setTimeout(() => {
-      setIsLoading(false);
-      setDeleteOpen(false);
-    }, 800);
+  // Extra info display
+  const getExtra = (user) => {
+    if (user.role === 'TEACHER') return user.subject?.name || '—';
+    if (user.role === 'STUDENT') return user.enrollments?.[0]?.class?.name || '—';
+    return '—';
   };
 
   return (
@@ -129,7 +125,15 @@ export default function Users() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={5}>
+                  <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+                    <Spinner size="md" />
+                  </div>
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={5}>
                   <div className="empty-state">
@@ -147,8 +151,7 @@ export default function Users() {
                   <td className="td">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
-                        width:          32,
-                        height:         32,
+                        width:          32, height: 32,
                         borderRadius:   '50%',
                         background:
                           user.role === 'ADMIN'   ? 'linear-gradient(135deg, var(--color-accent), var(--color-accent-dark))' :
@@ -157,10 +160,7 @@ export default function Users() {
                         display:        'flex',
                         alignItems:     'center',
                         justifyContent: 'center',
-                        fontSize:       11,
-                        fontWeight:     700,
-                        color:          'white',
-                        flexShrink:     0,
+                        fontSize:       11, fontWeight: 700, color: 'white', flexShrink: 0,
                       }}>
                         {user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
@@ -172,7 +172,7 @@ export default function Users() {
                   </td>
                   <td className="td"><Badge role={user.role} /></td>
                   <td className="td" style={{ color: 'var(--color-text2)', fontSize: 12 }}>
-                    {user.extra}
+                    {getExtra(user)}
                   </td>
                   <td className="td">
                     <div className="actions" style={{ justifyContent: 'flex-end' }}>
@@ -198,31 +198,29 @@ export default function Users() {
           </tbody>
         </table>
 
-        {filtered.length > 0 && (
+        {filtered.length > 0 && !isLoading && (
           <div style={{
             padding:   '12px 16px',
             borderTop: '1px solid var(--color-border)',
-            fontSize:  12,
-            color:     'var(--color-text2)',
+            fontSize:  12, color: 'var(--color-text2)',
           }}>
             {filtered.length} utilisateur{filtered.length > 1 ? 's' : ''} affiché{filtered.length > 1 ? 's' : ''}
           </div>
         )}
       </div>
 
-      {/* ── Modals ── */}
       <UserFormModal
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         onSubmit={handleSubmit}
         editUser={editUser}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
       />
       <UserDeleteDialog
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
-        isLoading={isLoading}
+        isLoading={isDeleting}
       />
     </div>
   );

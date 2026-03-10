@@ -1,23 +1,14 @@
 import { useState, useEffect } from 'react';
 import Modal from '../../../../components/ui/Modal';
 
-const AVAILABLE_STUDENTS = [
-  { value: '6', label: 'Leila Ouali' },
-  { value: '7', label: 'Mehdi Benhaddou' },
-  { value: '8', label: 'Zineb Alami' },
-];
-
-export default function AddStudentModal({ isOpen, onClose, onSubmit, isLoading }) {
+export default function AddStudentModal({
+  isOpen, onClose, onSubmit, isLoading, availableStudents = []
+}) {
   const [studentId, setStudentId] = useState('');
 
   useEffect(() => {
     if (isOpen) setStudentId('');
   }, [isOpen]);
-
-  const handleSubmit = () => {
-    if (!studentId) return;
-    onSubmit(studentId);
-  };
 
   return (
     <Modal
@@ -33,7 +24,7 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit, isLoading }
           </button>
           <button
             className="btn-primary"
-            onClick={handleSubmit}
+            onClick={() => onSubmit(studentId)}
             disabled={isLoading || !studentId}
           >
             Ajouter
@@ -43,17 +34,23 @@ export default function AddStudentModal({ isOpen, onClose, onSubmit, isLoading }
     >
       <div style={{ marginBottom: 14 }}>
         <label className="form-label">Sélectionner un étudiant</label>
-        <select
-          className="input"
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          style={{ appearance: 'none' }}
-        >
-          <option value="">Choisir un étudiant...</option>
-          {AVAILABLE_STUDENTS.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
-          ))}
-        </select>
+        {availableStudents.length === 0 ? (
+          <div style={{ fontSize: 13, color: 'var(--color-text2)', padding: '10px 0' }}>
+            Aucun étudiant disponible à ajouter.
+          </div>
+        ) : (
+          <select
+            className="input"
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            style={{ appearance: 'none' }}
+          >
+            <option value="">Choisir un étudiant...</option>
+            {availableStudents.map((s) => (
+              <option key={s.id} value={s.id}>{s.fullName}</option>
+            ))}
+          </select>
+        )}
       </div>
     </Modal>
   );

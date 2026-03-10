@@ -1,59 +1,49 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import Spinner          from '../../../components/ui/Spinner';
 import RoomFormModal    from './RoomFormModal';
 import RoomDeleteDialog from './RoomDeleteDialog';
+import { useRooms, useCreateRoom, useUpdateRoom, useDeleteRoom } from '../../../hooks/useRooms';
 
 const ROOM_ICONS = ['🏛️', '🖥️', '🧪', '📖', '🔬', '📐', '🎓', '🏢'];
 
-const MOCK_ROOMS = [
-  { id: 1, name: 'Amphi A',      capacity: 200, icon: '🏛️' },
-  { id: 2, name: 'Salle Info 1', capacity: 30,  icon: '🖥️' },
-  { id: 3, name: 'Labo 1',       capacity: 25,  icon: '🧪' },
-  { id: 4, name: 'Salle B201',   capacity: 40,  icon: '📖' },
-];
-
 export default function Rooms() {
-  const [formOpen,    setFormOpen]    = useState(false);
-  const [deleteOpen,  setDeleteOpen]  = useState(false);
-  const [editRoom,    setEditRoom]    = useState(null);
-  const [deleteRoom,  setDeleteRoom]  = useState(null);
-  const [isLoading,   setIsLoading]   = useState(false);
+  const [formOpen,   setFormOpen]   = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editRoom,   setEditRoom]   = useState(null);
+  const [deleteRoom, setDeleteRoom] = useState(null);
 
-  const openAdd = () => {
-    setEditRoom(null);
-    setFormOpen(true);
+  const { data: rooms = [], isLoading } = useRooms();
+  const createRoom = useCreateRoom();
+  const updateRoom = useUpdateRoom();
+  const deleteRoom_ = useDeleteRoom();
+
+  const openAdd    = () => { setEditRoom(null); setFormOpen(true); };
+  const openEdit   = (room) => { setEditRoom(room); setFormOpen(true); };
+  const openDelete = (room) => { setDeleteRoom(room); setDeleteOpen(true); };
+
+  const handleSubmit = async (form) => {
+    if (editRoom) {
+      await updateRoom.mutateAsync({ id: editRoom.id, ...form });
+    } else {
+      await createRoom.mutateAsync(form);
+    }
+    setFormOpen(false);
   };
 
-  const openEdit = (room) => {
-    setEditRoom(room);
-    setFormOpen(true);
+  const handleDelete = async () => {
+    await deleteRoom_.mutateAsync(deleteRoom.id);
+    setDeleteOpen(false);
   };
 
-  const openDelete = (room) => {
-    setDeleteRoom(room);
-    setDeleteOpen(true);
-  };
-
-  const handleSubmit = (form) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setFormOpen(false);
-    }, 1000);
-  };
-
-  const handleDelete = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setDeleteOpen(false);
-    }, 800);
-  };
+  if (isLoading) return (
+    <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+      <Spinner size="md" />
+    </div>
+  );
 
   return (
     <div className="content-area">
-
-      {/* ── Header action ── */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
         <button
           className="btn-primary"
@@ -64,43 +54,28 @@ export default function Rooms() {
         </button>
       </div>
 
-      {/* ── Cards grid ── */}
       <div style={{
         display:             'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
         gap:                 14,
       }}>
-        {MOCK_ROOMS.map((room) => (
+        {rooms.map((room, i) => (
           <div key={room.id} className="room-card">
-
-            {/* Icon */}
-            <div style={{ fontSize: 32, marginBottom: 10 }}>{room.icon}</div>
-
-            {/* Name */}
+            <div style={{ fontSize: 32, marginBottom: 10 }}>
+              {ROOM_ICONS[i % ROOM_ICONS.length]}
+            </div>
             <div style={{
-              fontSize:     14,
-              fontWeight:   700,
-              color:        'var(--color-text)',
-              marginBottom: 4,
-              fontFamily:   'var(--font-display)',
+              fontSize: 14, fontWeight: 700, color: 'var(--color-text)',
+              marginBottom: 4, fontFamily: 'var(--font-display)',
             }}>
               {room.name}
             </div>
-
-            {/* Capacity */}
             <div style={{
-              fontSize:     12,
-              color:        'var(--color-text2)',
-              marginBottom: 16,
-              display:      'flex',
-              alignItems:   'center',
-              justifyContent: 'center',
-              gap:          4,
+              fontSize: 12, color: 'var(--color-text2)', marginBottom: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
             }}>
               👥 {room.capacity} places
             </div>
-
-            {/* Actions */}
             <div className="actions" style={{ justifyContent: 'center' }}>
               <button
                 className="btn-ghost btn-sm"
@@ -120,52 +95,35 @@ export default function Rooms() {
           </div>
         ))}
 
-        {/* ── Add card ── */}
         <div
           onClick={openAdd}
           style={{
-            background:     'transparent',
-            border:         '1px dashed var(--color-border)',
-            borderRadius:   12,
-            padding:        20,
-            display:        'flex',
-            flexDirection:  'column',
-            alignItems:     'center',
-            justifyContent: 'center',
-            cursor:         'pointer',
-            minHeight:      160,
-            color:          'var(--color-text2)',
-            transition:     'all 0.2s',
-            gap:            8,
-            textAlign:      'center',
+            background: 'transparent', border: '1px dashed var(--color-border)',
+            borderRadius: 12, padding: 20, display: 'flex',
+            flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', minHeight: 160, color: 'var(--color-text2)',
+            transition: 'all 0.2s', gap: 8, textAlign: 'center',
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'var(--color-accent2)';
-            e.currentTarget.style.color       = 'var(--color-accent2)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--color-border)';
-            e.currentTarget.style.color       = 'var(--color-text2)';
-          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent2)'; e.currentTarget.style.color = 'var(--color-accent2)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text2)'; }}
         >
           <Plus size={24} />
           <span style={{ fontSize: 12 }}>Nouvelle salle</span>
         </div>
       </div>
 
-      {/* ── Modals ── */}
       <RoomFormModal
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         onSubmit={handleSubmit}
         editRoom={editRoom}
-        isLoading={isLoading}
+        isLoading={createRoom.isPending || updateRoom.isPending}
       />
       <RoomDeleteDialog
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
-        isLoading={isLoading}
+        isLoading={deleteRoom_.isPending}
         roomName={deleteRoom?.name || ''}
       />
     </div>
