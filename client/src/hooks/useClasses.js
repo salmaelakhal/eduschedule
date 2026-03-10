@@ -7,7 +7,8 @@ export function useClasses() {
     queryKey: ['classes'],
     queryFn:  async () => {
       const { data } = await api.get('/classes');
-      return data.data.classes;
+      console.log('CLASSES:', data);
+      return data.data.classes ?? data.data ?? [];
     },
   });
 }
@@ -17,7 +18,7 @@ export function useClass(id) {
     queryKey: ['classes', id],
     queryFn:  async () => {
       const { data } = await api.get(`/classes/${id}`);
-      return data.data.class;
+return data.data.classes ?? [];
     },
     enabled: !!id,
   });

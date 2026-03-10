@@ -8,7 +8,8 @@ export function useUsers() {
     queryKey: ['users'],
     queryFn:  async () => {
       const { data } = await api.get('/users');
-      return data.data.users;
+      console.log('USERS:', data);
+      return data.data.users ?? data.data ?? [];
     },
   });
 }

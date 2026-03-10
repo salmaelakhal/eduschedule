@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import Modal from '../../../components/ui/Modal';
+import { useSubjects } from '../../../hooks/useSubjects';  
+import { useClasses }  from '../../../hooks/useClasses';   
 
 const EMPTY_FORM = {
   fullName:  '',
@@ -10,37 +12,29 @@ const EMPTY_FORM = {
   classId:   '',
 };
 
-// Données statiques — on branchera l'API plus tard
-const SUBJECTS = [
-  { value: '1', label: 'Mathématiques' },
-  { value: '2', label: 'Algorithmique' },
-  { value: '3', label: 'Anglais Technique' },
-];
-
-const CLASSES = [
-  { value: '1', label: 'L1 Informatique' },
-  { value: '2', label: 'L2 Informatique' },
-  { value: '3', label: 'L3 Informatique' },
-];
-
 export default function UserFormModal({ isOpen, onClose, onSubmit, editUser, isLoading }) {
   const [form, setForm] = useState(EMPTY_FORM);
 
+  const { data: subjects = [] } = useSubjects();  
+  const { data: classes  = [] } = useClasses();   
+
+
+
   // Remplir le form si edit
-  useEffect(() => {
-    if (editUser) {
-      setForm({
-        fullName:  editUser.fullName,
-        email:     editUser.email,
-        password:  '',
-        role:      editUser.role,
-        subjectId: editUser.subjectId || '',
-        classId:   editUser.classId   || '',
-      });
-    } else {
-      setForm(EMPTY_FORM);
-    }
-  }, [editUser, isOpen]);
+useEffect(() => {
+  if (editUser) {
+    setForm({
+      fullName:  editUser.fullName,
+      email:     editUser.email,
+      password:  '',
+      role:      editUser.role,
+      subjectId: editUser.subject?.id        || '',
+      classId:   editUser.enrollments?.[0]?.classId || '',  // ← ici
+    });
+  } else {
+    setForm(EMPTY_FORM);
+  }
+}, [editUser, isOpen]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -139,9 +133,9 @@ export default function UserFormModal({ isOpen, onClose, onSubmit, editUser, isL
             style={{ appearance: 'none' }}
           >
             <option value="">Sélectionner une matière</option>
-            {SUBJECTS.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
+           {subjects.map((s) => (
+    <option key={s.id} value={s.id}>{s.name}</option>
+  ))}
           </select>
         </div>
       )}
@@ -158,9 +152,9 @@ export default function UserFormModal({ isOpen, onClose, onSubmit, editUser, isL
             style={{ appearance: 'none' }}
           >
             <option value="">Sélectionner une classe</option>
-            {CLASSES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
+            {classes.map((c) => (
+    <option key={c.id} value={c.id}>{c.name}</option>
+  ))}
           </select>
         </div>
       )}

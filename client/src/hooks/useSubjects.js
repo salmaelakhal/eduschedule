@@ -7,7 +7,8 @@ export function useSubjects() {
     queryKey: ['subjects'],
     queryFn:  async () => {
       const { data } = await api.get('/subjects');
-      return data.data.subjects;
+      console.log('SUBJECTS:', data);
+      return data.data.subjects ?? data.data ?? [];
     },
   });
 }

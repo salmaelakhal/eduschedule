@@ -8,31 +8,32 @@ export function useTimeSlots() {
     queryKey: ['timeslots'],
     queryFn:  async () => {
       const { data } = await api.get('/schedules/timeslots');
-      return data.data.timeSlots;
+      return data.data ?? []; // ← data.data directement, pas data.data.timeSlots
     },
-    staleTime: Infinity, // ← ne change jamais, pas besoin de refetch
+    staleTime: Infinity,
   });
 }
 
 // Emploi du temps d'une classe (admin)
 export function useScheduleByClass(classId) {
   return useQuery({
-    queryKey: ['schedules', classId],
-    queryFn:  async () => {
+    queryKey: ['schedules', classId],  // ← manquait !
+    queryFn: async () => {
       const { data } = await api.get(`/schedules?classId=${classId}`);
-      return data.data.schedules;
+      console.log('SCHEDULES RAW:', JSON.stringify(data));
+      return data.data.schedules ?? data.data ?? [];
     },
     enabled: !!classId,
   });
 }
 
-// Mon emploi du temps (teacher ou student)
 export function useMySchedule() {
   return useQuery({
     queryKey: ['schedules', 'me'],
     queryFn:  async () => {
       const { data } = await api.get('/schedules/my');
-      return data.data.schedules;
+      console.log('MY SCHEDULE RESPONSE:', data); // ← log temporaire
+      return data.data.schedules ?? data.data ?? [];
     },
   });
 }

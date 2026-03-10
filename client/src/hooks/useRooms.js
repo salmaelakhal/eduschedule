@@ -7,7 +7,8 @@ export function useRooms() {
     queryKey: ['rooms'],
     queryFn:  async () => {
       const { data } = await api.get('/rooms');
-      return data.data.rooms;
+      console.log('ROOMS:', data);
+      return data.data.rooms ?? data.data ?? [];
     },
   });
 }
