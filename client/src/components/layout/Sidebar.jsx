@@ -62,21 +62,12 @@ export default function Sidebar({ user, onLogout }) {
             gap: 10,
           }}
         >
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 10,
-              background:
-                "linear-gradient(135deg, var(--color-accent), var(--color-accent2))",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: "0 4px 12px rgba(108,99,255,0.3)",
-            }}
-          >
-            <GraduationCap size={18} color="white" />
+          <div className="logo-container">
+            <img
+              src="/favicon.png"
+              alt="EduSchedule Logo"
+              className="pro-logo"
+            />
           </div>
           <div>
             <div

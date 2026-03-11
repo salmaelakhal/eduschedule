@@ -140,6 +140,25 @@
 
 }
 
+.logo-container {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pro-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @theme {
   /* Colors */
   --color-bg: var(--theme-bg);
