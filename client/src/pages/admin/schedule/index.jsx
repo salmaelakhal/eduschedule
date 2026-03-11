@@ -13,6 +13,11 @@ import {
 } from '../../../hooks/useSchedule';
 import { useExportPDF } from '../../../hooks/useExportPDF';
 import { useRef } from 'react';
+import { RotateCcw } from 'lucide-react';
+import { useManualReset } from '../../../hooks/useScheduleLogs';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
+
+
 
 export default function Schedule() {
   const [selectedClassId, setSelectedClassId] = useState(null);
@@ -27,6 +32,9 @@ export default function Schedule() {
   const { data: schedules = [], isLoading: loadingSchedule } = useScheduleByClass(
     selectedClassId ?? classes[0]?.id
   );
+
+  const [resetOpen, setResetOpen] = useState(false);
+const manualReset = useManualReset();
 
   const createSchedule = useCreateSchedule();
   const deleteSchedule = useDeleteSchedule();
@@ -44,6 +52,13 @@ useEffect(() => {
     setSelectedClassId(classes[0].id);
   }
 }, [classes]);
+
+
+
+const handleReset = async () => {
+  await manualReset.mutateAsync();
+  setResetOpen(false);
+};
 
 
   const handleCellClick = (day, slot) => {
@@ -109,6 +124,25 @@ console.log('schedules:', schedules);
 >
   <FileDown size={14} /> Exporter PDF
 </button>
+
+// Reset manuel
+<button
+  className="btn-danger btn-sm"
+  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+  onClick={() => setResetOpen(true)}
+>
+  <RotateCcw size={14} /> Réinitialiser
+</button>
+
+<ConfirmDialog
+  isOpen={resetOpen}
+  onClose={() => setResetOpen(false)}
+  onConfirm={handleReset}
+  isLoading={manualReset.isPending}
+  title="Réinitialiser l'emploi du temps"
+  message="Toutes les séances seront archivées et supprimées. Cette action est irréversible."
+/>
+
       </div>
 
       {/* ── Titre grille ── */}

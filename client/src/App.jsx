@@ -22,6 +22,8 @@ import AdminSchedule from './pages/admin/schedule';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import StudentDashboard from './pages/student/Dashboard';
 
+import Historique from './pages/admin/historique/index';
+
 // Redirection intelligente à la racine selon le rôle
 function RootRedirect() {
   const { isLoading, isAuth, user } = useAuth();
@@ -72,6 +74,8 @@ export default function App() {
         <Route path="rooms" element={<AdminRooms />} />
         <Route path="subjects" element={<AdminSubjects />} />
         <Route path="schedule" element={<AdminSchedule />} />
+        <Route path="historique" element={<Historique />} />
+
       </Route>
 
       {/* ── Teacher ── */}
