@@ -248,6 +248,10 @@ export const deleteUser = async (req, res) => {
       });
     }
 
+    // Supprimer manuellement les dépendances pour éviter l'erreur de contrainte de clé étrangère
+    await prisma.schedule.deleteMany({ where: { teacherId: Number(id) } });
+    await prisma.enrollment.deleteMany({ where: { studentId: Number(id) } });
+
     await prisma.user.delete({ where: { id: Number(id) } });
 
     res.json({
