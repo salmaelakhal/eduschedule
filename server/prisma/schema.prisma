@@ -116,3 +116,13 @@ model Schedule {
   @@unique([roomId, timeSlotId])
   @@unique([classId, timeSlotId])
 }
+
+
+model ScheduleLog {
+  id         Int      @id @default(autoincrement())
+  archivedAt DateTime @default(now())
+  weekStart  DateTime
+  weekEnd    DateTime
+  totalCount Int
+  data       Json     // toutes les séances archivées
+}

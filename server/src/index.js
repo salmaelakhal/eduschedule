@@ -8,6 +8,9 @@ import classRoutes   from './routes/class.routes.js';
 import roomRoutes    from './routes/room.routes.js';
 import subjectRoutes from './routes/subject.routes.js';
 import scheduleRoutes from './routes/schedule.routes.js';
+import statsRoutes from './routes/stats.routes.js';
+import scheduleLogRoutes   from './routes/scheduleLog.routes.js';
+import { startWeeklyResetJob } from './jobs/weeklyReset.job.js';
 
 dotenv.config();
 
@@ -26,6 +29,9 @@ app.use('/api/classes',  classRoutes);
 app.use('/api/rooms',    roomRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/schedules', scheduleRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/logs', scheduleLogRoutes);
+
 
 // ── Route santé ──
 app.get('/api/health', (req, res) => {
@@ -44,3 +50,4 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`✅ Serveur lancé sur http://localhost:${PORT}`);
 });
+startWeeklyResetJob();

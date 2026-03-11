@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs';
-import prisma from '../lib/prisma.js';
+import bcrypt from "bcryptjs";
+import prisma from "../lib/prisma.js";
 
 // ── GET ALL USERS ──
 export const getUsers = async (req, res) => {
@@ -18,13 +18,13 @@ export const getUsers = async (req, res) => {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     res.json({ success: true, data: users });
   } catch (err) {
-    console.error('[GET_USERS]', err);
-    res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    console.error("[GET_USERS]", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 };
 
@@ -53,14 +53,14 @@ export const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Utilisateur introuvable.',
+        message: "Utilisateur introuvable.",
       });
     }
 
     res.json({ success: true, data: user });
   } catch (err) {
-    console.error('[GET_USER_BY_ID]', err);
-    res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    console.error("[GET_USER_BY_ID]", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 };
 
@@ -74,32 +74,32 @@ export const createUser = async (req, res) => {
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: 'Cet email est déjà utilisé.',
+        message: "Cet email est déjà utilisé.",
       });
     }
 
     // Vérifier si subjectId existe si TEACHER
-    if (role === 'TEACHER' && subjectId) {
+    if (role === "TEACHER" && subjectId) {
       const subject = await prisma.subject.findUnique({
         where: { id: Number(subjectId) },
       });
       if (!subject) {
         return res.status(404).json({
           success: false,
-          message: 'Matière introuvable.',
+          message: "Matière introuvable.",
         });
       }
     }
 
     // Vérifier si classId existe si STUDENT
-    if (role === 'STUDENT' && classId) {
+    if (role === "STUDENT" && classId) {
       const classe = await prisma.class.findUnique({
         where: { id: Number(classId) },
       });
       if (!classe) {
         return res.status(404).json({
           success: false,
-          message: 'Classe introuvable.',
+          message: "Classe introuvable.",
         });
       }
     }
@@ -111,8 +111,8 @@ export const createUser = async (req, res) => {
         fullName,
         email,
         password: hashedPassword,
-        role: role || 'STUDENT',
-        subjectId: role === 'TEACHER' && subjectId ? Number(subjectId) : null,
+        role: role || "STUDENT",
+        subjectId: role === "TEACHER" && subjectId ? Number(subjectId) : null,
       },
       select: {
         id: true,
@@ -125,7 +125,7 @@ export const createUser = async (req, res) => {
     });
 
     // Si STUDENT → inscription automatique à la classe
-    if (role === 'STUDENT' && classId) {
+    if (role === "STUDENT" && classId) {
       await prisma.enrollment.create({
         data: {
           studentId: user.id,
@@ -136,12 +136,12 @@ export const createUser = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Utilisateur créé avec succès.',
+      message: "Utilisateur créé avec succès.",
       data: user,
     });
   } catch (err) {
-    console.error('[CREATE_USER]', err);
-    res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    console.error("[CREATE_USER]", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 };
 
@@ -158,7 +158,7 @@ export const updateUser = async (req, res) => {
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: 'Utilisateur introuvable.',
+        message: "Utilisateur introuvable.",
       });
     }
 
@@ -168,7 +168,7 @@ export const updateUser = async (req, res) => {
       if (emailTaken) {
         return res.status(409).json({
           success: false,
-          message: 'Cet email est déjà utilisé.',
+          message: "Cet email est déjà utilisé.",
         });
       }
     }
@@ -176,13 +176,13 @@ export const updateUser = async (req, res) => {
     // Construire les données à mettre à jour
     const updateData = {};
     if (fullName) updateData.fullName = fullName;
-    if (email)    updateData.email = email;
-    if (role)     updateData.role = role;
+    if (email) updateData.email = email;
+    if (role) updateData.role = role;
     if (password) updateData.password = await bcrypt.hash(password, 12);
-    if (role === 'TEACHER' && subjectId) {
+    if (role === "TEACHER" && subjectId) {
       updateData.subjectId = Number(subjectId);
     }
-    if (role !== 'TEACHER') {
+    if (role !== "TEACHER") {
       updateData.subjectId = null;
     }
 
@@ -198,14 +198,30 @@ export const updateUser = async (req, res) => {
       },
     });
 
-    res.json({
-      success: true,
-      message: 'Utilisateur mis à jour.',
-      data: user,
-    });
+    const { classId } = req.body;
+    if (role === "STUDENT" && classId) {
+      // Supprimer l'ancien enrollment
+      await prisma.enrollment.deleteMany({
+        where: { studentId: Number(id) },
+      });
+      // Créer le nouveau
+      await prisma.enrollment.create({
+        data: {
+          studentId: Number(id),
+          classId: Number(classId),
+        },
+      });
+    } else if (role !== "STUDENT") {
+      // Si changement de rôle vers non-étudiant, supprimer les enrollments
+      await prisma.enrollment.deleteMany({
+        where: { studentId: Number(id) },
+      });
+    }
+
+    res.json({ success: true, message: "Utilisateur mis à jour.", data: user });
   } catch (err) {
-    console.error('[UPDATE_USER]', err);
-    res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    console.error("[UPDATE_USER]", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 };
 
@@ -218,7 +234,7 @@ export const deleteUser = async (req, res) => {
     if (Number(id) === req.user.id) {
       return res.status(400).json({
         success: false,
-        message: 'Vous ne pouvez pas supprimer votre propre compte.',
+        message: "Vous ne pouvez pas supprimer votre propre compte.",
       });
     }
 
@@ -228,7 +244,7 @@ export const deleteUser = async (req, res) => {
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: 'Utilisateur introuvable.',
+        message: "Utilisateur introuvable.",
       });
     }
 
@@ -236,10 +252,10 @@ export const deleteUser = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Utilisateur supprimé avec succès.',
+      message: "Utilisateur supprimé avec succès.",
     });
   } catch (err) {
-    console.error('[DELETE_USER]', err);
-    res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    console.error("[DELETE_USER]", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 };
