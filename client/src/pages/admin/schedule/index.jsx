@@ -125,7 +125,7 @@ console.log('schedules:', schedules);
   <FileDown size={14} /> Exporter PDF
 </button>
 
-// Reset manuel
+{/*  Reset manuel */}
 <button
   className="btn-danger btn-sm"
   style={{ display: 'flex', alignItems: 'center', gap: 6 }}
