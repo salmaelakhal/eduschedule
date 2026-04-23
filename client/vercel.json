@@ -1,1 +1,6 @@
-echo '{"rewrites":[{"source":"/(.*)","destination":"/index.html"}]}' > /Users/flifla/Dev/PERN/eduschedule/client/vercel.json
+
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
