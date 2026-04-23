@@ -21,12 +21,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://eduschedule.vercel.app',
-    /\.vercel\.app$/,  // ← accepte toutes les previews Vercel
+    'https://eduschedule-one.vercel.app',
   ],
   credentials: true,
 }));
-
 
 
 

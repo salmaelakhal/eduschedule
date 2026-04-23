@@ -8,6 +8,13 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// ── Intercepteur requête ──
+// Contourne la page d'avertissement ngrok en production
+api.interceptors.request.use((config) => {
+  config.headers['ngrok-skip-browser-warning'] = 'true';
+  return config;
+});
+
 // ── Intercepteur réponse ──
 // Si 401 → redirige vers /login (token expiré ou absent)
 api.interceptors.response.use(

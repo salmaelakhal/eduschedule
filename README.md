@@ -31,3 +31,22 @@ npm run dev
 
 ## 📸 Screenshots
 *Coming soon...*
+
+## 🌐 Déploiement Vercel + ngrok
+
+### 1. Configurer les variables d'environnement sur Vercel
+Dans le **Vercel Dashboard** :
+- Allez dans **Project Settings → Environment Variables**
+- Ajoutez :
+  - `VITE_API_URL` = `https://dismantle-concave-matching.ngrok-free.dev/api`
+- Redéployez le frontend
+
+### 2. Lancer le backend avec ngrok
+```bash
+cd server
+npm run dev
+ngrok http 3000
+```
+
+> ⚠️ **Important** : L'URL ngrok change à chaque redémarrage de ngrok.  
+> Pensez à mettre à jour `VITE_API_URL` dans les variables d'environnement Vercel, puis redéployez.
