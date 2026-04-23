@@ -6,6 +6,7 @@ dotenv.config();
 // ── Vérifier le token JWT depuis le cookie ──
 export const authenticate = (req, res, next) => {
   const token = req.cookies.token; // ← depuis HttpOnly cookie
+  console.log('🔐 Auth middleware | cookies:', req.cookies, '| token present?', !!token);
 
   if (!token) {
     return res.status(401).json({

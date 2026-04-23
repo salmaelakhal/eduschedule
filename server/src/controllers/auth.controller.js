@@ -6,12 +6,20 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // ── Config cookie ──
-const COOKIE_OPTIONS = {
-  httpOnly: true,   // inaccessible par JavaScript ✅
-  secure: process.env.NODE_ENV === 'production', // HTTPS en prod
-  sameSite: 'strict', // protection CSRF ✅
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours en ms
+// Détecte HTTPS (direct ou via proxy comme ngrok)
+const isHttps = (req) => {
+  const proto = req.get('x-forwarded-proto');
+  const firstProto = proto ? proto.split(',')[0].trim() : '';
+  return req.secure === true || firstProto === 'https' || req.headers['x-ngrok-id'] !== undefined;
 };
+
+const getCookieOptions = (req) => ({
+  httpOnly: true,   // inaccessible par JavaScript ✅
+  secure: isHttps(req), // HTTPS uniquement
+  sameSite: isHttps(req) ? 'none' : 'lax', // 'none' pour cross-site (Vercel ↔ ngrok)
+  partitioned: isHttps(req) || false, // CHIPS : supporte le blocage des cookies tiers
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours en ms
+});
 
 // ── Générer un token JWT ──
 const generateToken = (user) => {
@@ -69,7 +77,7 @@ export const register = async (req, res) => {
 
     // Générer le token et le mettre dans un cookie
     const token = generateToken(user);
-    res.cookie('token', token, COOKIE_OPTIONS);
+    res.cookie('token', token, getCookieOptions(req));
 
     res.status(201).json({
       success: true,
@@ -118,7 +126,9 @@ export const login = async (req, res) => {
 
     // Générer le token et le mettre dans un cookie
     const token = generateToken(user);
-    res.cookie('token', token, COOKIE_OPTIONS);
+    const opts = getCookieOptions(req);
+    console.log('🔒 Cookie options:', opts, '| secure?', req.secure, '| proto?', req.get('x-forwarded-proto'));
+    res.cookie('token', token, opts);
 
     // Retourner sans le mot de passe
     const { password: _, ...userWithoutPassword } = user;
@@ -169,6 +179,6 @@ export const getMe = async (req, res) => {
 
 // ── LOGOUT ──
 export const logout = (req, res) => {
-  res.clearCookie('token', COOKIE_OPTIONS);
+  res.clearCookie('token', getCookieOptions(req));
   res.json({ success: true, message: 'Déconnecté avec succès.' });
 };
