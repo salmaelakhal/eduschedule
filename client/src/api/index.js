@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+console.log('🔍 API URL:', import.meta.env.VITE_API_URL); // ← ajoute
+
+
 const api = axios.create({
-  baseURL:         '/api',
-  withCredentials: true, // ← envoie les cookies HttpOnly automatiquement
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  withCredentials: true,
 });
 
 // ── Intercepteur réponse ──

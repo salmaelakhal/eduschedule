@@ -18,9 +18,27 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Middlewares globaux ──
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://eduschedule.vercel.app',
+    /\.vercel\.app$/,  // ← accepte toutes les previews Vercel
+  ],
+  credentials: true,
+}));
+
+
+
+
 app.use(express.json());
 app.use(cookieParser());
+
+
+// ← ajoute après cors
+app.use((req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
 
 // ── Routes ──
 app.use('/api/auth',     authRoutes);
